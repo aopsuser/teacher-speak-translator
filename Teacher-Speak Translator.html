@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Teacher-Speak Translator</title>
+<style>
+:root{--bg:#fbf7ef;--fg:#201a14;--mut:#6d6254;--card:#fff;--ac:#d9480f;--bd:#e5dccb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#18140f;--fg:#f3ece0;--mut:#a89b88;--card:#241e17;--ac:#ff8a4c;--bd:#3a3126}}
+:root[data-theme="dark"]{--bg:#18140f;--fg:#f3ece0;--mut:#a89b88;--card:#241e17;--ac:#ff8a4c;--bd:#3a3126}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 Georgia,"Times New Roman",serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.9rem;margin:0 0 4px;letter-spacing:-.5px}
+h3{margin:0 0 6px;font-size:1rem;color:var(--ac)}
+.mut{color:var(--mut)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+button{font:600 .95rem system-ui,sans-serif;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:10px;padding:8px 14px}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+button.on{border-color:var(--ac);color:var(--ac)}
+nav{display:flex;gap:8px;margin:16px 0}
+textarea{width:100%;box-sizing:border-box;min-height:110px;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips button{font-weight:400;font-size:.85rem;text-align:left}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-top:12px}
+.bar{height:12px;border-radius:6px;background:var(--bd);overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2f9e44,#f59f00,#e03131);background-size:720px 100%;transition:width .3s}
+mark{background:#ffd43b;color:#201a14;border-radius:3px;padding:0 2px}
+ul,ol{margin:4px 0;padding-left:22px}
+.q{font-style:italic}
+[hidden]{display:none!important}
+.tbl{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><div><h1 id="ti"></h1><div class="mut" id="sub"></div></div><button id="lang">RU</button></div>
+<nav id="tabs"><button data-t="1" class="on"></button><button data-t="2"></button><button data-t="3"></button></nav>
+
+<section id="s1">
+<textarea id="in1"></textarea>
+<div class="chips" id="ex"></div>
+<div class="card" id="meter" hidden><h3 id="fogT"></h3><div class="bar"><i id="fog"></i></div><div id="fogN" class="mut"></div><div id="hl"></div></div>
+<p><button class="p" id="go1"></button></p>
+<div id="out1"></div>
+</section>
+
+<section id="s2" hidden>
+<textarea id="in2"></textarea>
+<p><button class="p" id="go2"></button></p>
+<div id="out2"></div>
+</section>
+
+<section id="s3" hidden>
+<div class="card"><h3>Project</h3><p><b>Teacher-Speak Translator</b> &mdash; "From teacher to human."</p></div>
+<div class="card"><h3>Problem</h3><p>Students lose points not because they don't know the material, but because they don't understand what the assignment asks for. Phrases like "discuss more fully" or "be creative" are everywhere, and many students are too shy to ask. Teachers face the same problem from the other side: they rarely find out an assignment was unclear until the work comes back.</p></div>
+<div class="card"><h3>What it does</h3><ul>
+<li><b>Student mode:</b> paste a vague assignment. A rule-based <i>Fog Meter</i> highlights vague phrases instantly (1&ndash;10). Claude then explains what the teacher most likely expects, what a strong answer contains, a self-check list, and a polite question to ask the teacher. It never writes the assignment for the student.</li>
+<li><b>Teacher mode:</b> paste your assignment before handing it out. Get a clarity score, the problem phrases, and a clearer rewrite.</li></ul></div>
+<div class="card"><h3>Built with</h3><p>HTML, CSS and vanilla JavaScript in a single file. Fog Meter: hand-written regex dictionary (English and Russian), no AI. Explanations: Claude through the Artifact <code>sample</code> capability. Hosting: Claude Artifacts. No datasets, no external APIs, no data stored.</p></div>
+<div class="card"><h3>AI-use disclosure</h3><p>We used Claude to brainstorm and pick the idea, to write the first version of the code and the prompts, and to draft this text. The product itself uses Claude at runtime for the translation features. The vague-phrase dictionary and scoring rule are plain code we can explain line by line. The prompt tells the model not to do the student's homework.</p></div>
+<div class="card"><h3>Team</h3><p>[add team member names]</p></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const el=(t,x,c)=>{const e=document.createElement(t);if(x!=null)e.textContent=x;if(c)e.className=c;return e};
+const D={en:{ti:"Teacher-Speak Translator",sub:"From teacher to human. Paste a vague assignment, get what they actually want.",tabs:["Student","Teacher","About"],ph1:"Paste the assignment here…",ph2:"Paste your assignment to check how clear it is…",go1:"Translate",go2:"Check clarity",fog:"Fog level",hits:"Vague phrases found",clear:"Nothing vague found. Nice and clear!",wants:"What they actually want",strong:"What a strong answer contains",chk:"Self-check list",ask:"Ask the teacher",score:"Clarity score",iss:"Problems",rw:"Clearer version",busy:"Thinking…",err:"AI is unavailable here, but the Fog Meter still works.",empty:"Paste some text first.",L:"English",ex:["Discuss the causes of the French Revolution in more depth.","Write a creative response to the text, supporting your ideas appropriately."],v:["in more depth","more fully","in detail","elaborate","expand","discuss","analy[sz]e","explain","creative","appropriate(?:ly)?","sufficient(?:ly)?","thorough(?:ly)?","as needed","etc\\.?","in depth","support your","good","some"]},
+ru:{ti:"Переводчик с учительского",sub:"С учительского на человеческий. Вставьте расплывчатое задание и узнайте, чего от вас хотят.",tabs:["Ученик","Учитель","О проекте"],ph1:"Вставьте задание сюда…",ph2:"Вставьте своё задание, чтобы проверить, насколько оно понятно…",go1:"Перевести",go2:"Проверить ясность",fog:"Уровень тумана",hits:"Найдены расплывчатые фразы",clear:"Ничего расплывчатого. Всё чётко!",wants:"Чего от вас реально хотят",strong:"Что есть в сильном ответе",chk:"Чек-лист самопроверки",ask:"Что спросить у учителя",score:"Оценка ясности",iss:"Проблемы",rw:"Более понятная версия",busy:"Думаю…",err:"ИИ здесь недоступен, но измеритель тумана работает.",empty:"Сначала вставьте текст.",L:"Russian",ex:["Раскройте тему более полно.","Проанализируйте текст и обоснуйте свою позицию соответствующим образом."],v:["более полно","подробн\\p{L}*","раскро\\p{L}*","проанализир\\p{L}*","обсуд\\p{L}*","креатив\\p{L}*","достаточн\\p{L}*","соответствующ\\p{L}*","и т\\.?\\s?д\\.?","по возможности","глубок\\p{L}*","обоснуй\\p{L}*","развёрнут\\p{L}*|развернут\\p{L}*"]}};
+let lg="en";const T=k=>D[lg][k];
+function rx(){return new RegExp("(?<![\\p{L}])(?:"+D[lg].v.join("|")+")(?![\\p{L}])","giu")}
+function applyLang(){
+ document.documentElement.lang=lg;$("ti").textContent=T("ti");$("sub").textContent=T("sub");
+ document.querySelectorAll("#tabs button").forEach((b,i)=>b.textContent=T("tabs")[i]);
+ $("in1").placeholder=T("ph1");$("in2").placeholder=T("ph2");$("go1").textContent=T("go1");$("go2").textContent=T("go2");
+ $("lang").textContent=lg==="en"?"RU":"EN";
+ const ex=$("ex");ex.replaceChildren();
+ T("ex").forEach(s=>{const b=el("button",s);b.onclick=()=>{$("in1").value=s;meter()};ex.append(b)});
+ meter();
+}
+function meter(){
+ const txt=$("in1").value,box=$("meter");
+ if(!txt.trim()){box.hidden=true;return}
+ box.hidden=false;
+ const found=[...txt.matchAll(rx())];
+ const uniq=new Set(found.map(m=>m[0].toLowerCase()));
+ const hasNum=/\d/.test(txt);
+ let s=Math.round(uniq.size*2.5+(hasNum?0:2));s=Math.max(1,Math.min(10,s));
+ $("fogT").textContent=T("fog")+": "+s+"/10";
+ $("fog").style.width=s*10+"%";
+ $("fogN").textContent=uniq.size?T("hits")+": "+[...uniq].join(", "):T("clear");
+ const hl=$("hl");hl.replaceChildren();
+ const p=el("p");let i=0;
+ found.forEach(m=>{p.append(txt.slice(i,m.index));p.append(el("mark",m[0]));i=m.index+m[0].length});
+ p.append(txt.slice(i));hl.append(p);
+}
+function sec(box,title,body){const c=el("div",null,"card");c.append(el("h3",title),body);box.append(c)}
+function list(a,o){const u=el(o?"ol":"ul");(Array.isArray(a)?a:[]).forEach(x=>u.append(el("li",String(x))));return u}
+async function run(prompt,box,render){
+ box.replaceChildren(el("p",T("busy"),"mut"));
+ try{
+  const s=window.claude?await claude.use("sample"):null;
+  if(!s)throw new Error("none");
+  const r=await s.json(prompt,{modelTier:"quick"});
+  box.replaceChildren();render(r||{});
+ }catch(e){box.replaceChildren(el("p",T("err"),"mut"))}
+}
+$("go1").onclick=()=>{
+ const t=$("in1").value.trim();if(!t){$("out1").replaceChildren(el("p",T("empty"),"mut"));return}
+ const p=`You help a high school student understand a vague assignment. Reply in ${T("L")}. Do NOT do the assignment or write the answer for the student. Return ONLY JSON, no markdown: {"wants":"1-2 sentences on what the teacher most likely expects","strong":["3-5 short points on what a strong answer contains"],"checklist":["5-7 concrete self-check items"],"ask":"one polite question the student could ask the teacher"}\nAssignment: """${t}"""`;
+ run(p,$("out1"),r=>{const o=$("out1");sec(o,T("wants"),el("p",r.wants||""));sec(o,T("strong"),list(r.strong));sec(o,T("chk"),list(r.checklist,1));sec(o,T("ask"),el("p",r.ask||"","q"))});
+};
+$("go2").onclick=()=>{
+ const t=$("in2").value.trim();if(!t){$("out2").replaceChildren(el("p",T("empty"),"mut"));return}
+ const p=`You help a teacher check whether a school assignment is clear to students. Reply in ${T("L")}. Return ONLY JSON, no markdown: {"score":<integer 1-10, 10 = crystal clear>,"issues":[{"phrase":"vague phrase from the text","problem":"why students may misread it"}],"rewrite":"a clearer version that states length, format, grading criteria and deadline (use [brackets] for details you don't know)"}\nAssignment: """${t}"""`;
+ run(p,$("out2"),r=>{const o=$("out2");sec(o,T("score"),el("p",(r.score??"?")+"/10"));
+  const u=el("ul");(Array.isArray(r.issues)?r.issues:[]).forEach(x=>u.append(el("li",`${x.phrase||""} — ${x.problem||""}`)));
+  sec(o,T("iss"),u);const w=el("p",r.rewrite||"");w.style.whiteSpace="pre-wrap";sec(o,T("rw"),w)});
+};
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+ ["1","2","3"].forEach(n=>$("s"+n).hidden=n!==b.dataset.t);
+});
+$("in1").addEventListener("input",meter);
+$("lang").onclick=()=>{lg=lg==="en"?"ru":"en";applyLang()};
+applyLang();
+</script>
+</body>
+</html>
